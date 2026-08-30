@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Role Playing Realm - Arcade X</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* RPG Specific Page Styles */
+        .rpg-banner {
+            background: linear-gradient(180deg, rgba(7, 7, 10, 0.4) 0%, rgba(7, 7, 10, 0.95) 100%),
+                        url('assets/masked_figure.jpg') no-repeat center center/cover;
+            position: relative;
+        }
+
+        /* Rotating Magical Circle behind Hero card */
+        .magic-aura-container {
+            position: absolute;
+            width: 130%;
+            height: 130%;
+            top: -15%;
+            left: -15%;
+            z-index: -1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        .magic-ring {
+            width: 450px;
+            height: 450px;
+            border: 2px dashed rgba(176, 38, 255, 0.25);
+            border-radius: 50%;
+            position: absolute;
+            animation: rotate-clockwise 20s linear infinite;
+        }
+
+        .magic-ring::before {
+            content: '';
+            position: absolute;
+            inset: 15px;
+            border: 1px solid rgba(176, 38, 255, 0.15);
+            border-radius: 50%;
+        }
+
+        .magic-ring::after {
+            content: '';
+            position: absolute;
+            inset: 40px;
+            border: 3px dotted rgba(176, 38, 255, 0.35);
+            border-radius: 50%;
+            animation: rotate-counter 12s linear infinite;
+        }
+
+        @keyframes rotate-clockwise {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes rotate-counter {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(-360deg); }
+        }
+
+        /* Class Selector System using CSS Tabs */
+        .class-selector-system {
+            margin-top: 4rem;
+            background: #09090e;
+            border: 2px solid rgba(176, 38, 255, 0.15);
+            border-radius: 16px;
+            padding: 3rem;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        }
+
+        /* Hide radio buttons */
+        .class-radio {
+            display: none;
+        }
+
+        .class-labels-container {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 1rem;
+        }
+
+        .class-label {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            padding: 0.8rem 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.02);
+            color: var(--text-secondary);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        .class-label:hover {
+            border-color: var(--neon-purple);
+            color: var(--text-primary);
+            box-shadow: 0 0 10px rgba(176, 38, 255, 0.2);
+        }
+
+        /* Class Card details structure */
+        .class-cards-wrapper {
+            position: relative;
+            min-height: 480px;
+        }
+
+        .class-display-card {
+            display: none;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 3rem;
+            align-items: center;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        .class-visual-frame {
+            height: 400px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid rgba(176, 38, 255, 0.2);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+            position: relative;
+        }
+
+        .class-visual-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Connecting Radio check states to Card visibility */
+        #select-knight:checked ~ .class-labels-container label[for="select-knight"],
+        #select-mage:checked ~ .class-labels-container label[for="select-mage"],
+        #select-archer:checked ~ .class-labels-container label[for="select-archer"] {
+            border-color: var(--neon-purple);
+            background: rgba(176, 38, 255, 0.15);
+            color: var(--text-primary);
+            box-shadow: 0 0 15px rgba(176, 38, 255, 0.4), inset 0 0 5px rgba(176, 38, 255, 0.2);
+        }
+
+        #select-knight:checked ~ .class-cards-wrapper #card-knight,
+        #select-mage:checked ~ .class-cards-wrapper #card-mage,
+        #select-archer:checked ~ .class-cards-wrapper #card-archer {
+            display: grid;
+            animation: card-reveal 0.5s forwards ease;
+        }
+
+        @keyframes card-reveal {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Rotating/pulse items in RPG stats */
+        .gear-slots {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 1.5rem;
+        }
+
+        .gear-slot-item {
+            aspect-ratio: 1;
+            background: rgba(255,255,255,0.02);
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .gear-slot-item span {
+            font-size: 0.6rem;
+            margin-top: 5px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.4);
+        }
+
+        .gear-slot-item:hover {
+            border-color: var(--neon-purple);
+            color: var(--neon-purple);
+            box-shadow: 0 0 10px rgba(176, 38, 255, 0.2);
+            background: rgba(176, 38, 255, 0.05);
+        }
+
+        @media (max-width: 900px) {
+            .class-display-card {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            .class-visual-frame {
+                height: 280px;
+            }
+            .class-cards-wrapper {
+                min-height: auto;
+            }
+        }
+    </style>
+</head>
+<body class="theme-rpg">
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="nav-container">
+            <a href="index.html" class="logo">ARCADE<span>X</span></a>
+            
+            <input type="checkbox" id="menu-toggle">
+            <label for="menu-toggle" class="menu-toggle-btn">
+                <span></span>
+                <span></span>
+                <span></span>
+            </label>
+
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="strategy.html" class="nav-link">Strategy</a></li>
+                <li><a href="adventure.html" class="nav-link">Adventure</a></li>
+                <li><a href="rpg.html" class="nav-link active">RPG</a></li>
+                <li><a href="simulation.html" class="nav-link">Simulation</a></li>
+                <li><a href="feedback.html" class="nav-link">Feedback</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        
+        <!-- Hero/Banner Section -->
+        <section class="hero-section rpg-banner">
+            <div class="hero-content">
+                <div class="cyber-badge-main" style="border-color: var(--theme-accent); color: var(--theme-accent); box-shadow: var(--theme-shadow);">RPG Dimension</div>
+                <h1 class="hero-title" style="background: linear-gradient(135deg, #fff 30%, var(--neon-purple) 70%, #5500aa); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Gothic <span>Chronicles</span></h1>
+                <p class="hero-text">Form your own identity, upgrade medieval weaponry, and coordinate raid quests in gothic realms using pure status-based builds.</p>
+                <div class="hero-buttons">
+                    <a href="#details" class="btn btn-purple">Assemble Party</a>
+                    <a href="#selector" class="btn">Customize Class</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Character and Genre details -->
+        <section class="container" id="details">
+            <div class="game-info-wrapper">
+                
+                <!-- Character Card -->
+                <div class="character-card">
+                    <div class="magic-aura-container">
+                        <div class="magic-ring"></div>
+                    </div>
+                    <div class="character-image-container">
+                        <img src="assets/masked_figure.jpg" alt="The Judgement Knight" class="character-image">
+                        <div class="character-badge">Gothic Legend</div>
+                        <div class="character-details">
+                            <h3 class="character-name">Judgement</h3>
+                            <div class="character-role">Masked Knight Lord</div>
+                            
+                            <!-- Stats -->
+                            <div class="stat-bar-container">
+                                <div class="stat-header">
+                                    <span>Gothic Magic</span>
+                                    <span>91%</span>
+                                </div>
+                                <div class="stat-bar"><div class="stat-fill" style="width: 91%;"></div></div>
+                            </div>
+                            
+                            <div class="stat-bar-container">
+                                <div class="stat-header">
+                                    <span>Armor Rating</span>
+                                    <span>96%</span>
+                                </div>
+                                <div class="stat-bar"><div class="stat-fill" style="width: 96%;"></div></div>
+                            </div>
+
+                            <div class="stat-bar-container">
+                                <div class="stat-header">
+                                    <span>Dark Resistance</span>
+                                    <span>89%</span>
+                                </div>
+                                <div class="stat-bar"><div class="stat-fill" style="width: 89%;"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Explanation of Game Type -->
+                <div class="game-description">
+                    <h2>Living Your Role: What is an RPG?</h2>
+                    <p>Role-Playing Games (RPGs) give players detailed control over a single character's growth, class choices, equipment builds, and storyline decisions. The core mechanics center on earning experience points (XP) to unlock traits and optimize gear layouts.</p>
+                    <p>Take <strong>Judgement the Masked Knight</strong> as an example. Starting as a simple squire, players complete main quests, select attributes (like Gothic Spellcasting or Physical Defense), and defeat gothic bosses to forge legendary masks containing ancient power.</p>
+                    
+                    <ul class="game-features">
+                        <li><strong>Character Customization</strong>: Allocate talent points to build a pure mage, a heavy shield knight, or a hybrid.</li>
+                        <li><strong>Deep Item Economy</strong>: Hunt rare loot packs, slot magical runes into swords, and upgrade gear.</li>
+                        <li><strong>Quest-Driven Narrative</strong>: Align with varying factions and alter the fate of gothic castles with your decisions.</li>
+                    </ul>
+                </div>
+
+            </div>
+
+            <!-- Class Selection Interactive Widget -->
+            <div class="class-selector-system" id="selector">
+                <h2 class="section-title" style="font-size: 1.8rem; margin-bottom: 0.5rem;">Pure CSS <span>Hero Selection</span></h2>
+                <p style="text-align: center; color: var(--text-secondary); max-width: 600px; margin: 0 auto 2.5rem auto;">Select a radio node tab to display character cards, weapon classes, and equipment slots entirely via CSS.</p>
+                
+                <!-- Hidden inputs controlling active tab -->
+                <input type="radio" name="rpg-class" id="select-knight" class="class-radio" checked>
+                <input type="radio" name="rpg-class" id="select-mage" class="class-radio">
+                <input type="radio" name="rpg-class" id="select-archer" class="class-radio">
+
+                <!-- Tab Labels -->
+                <div class="class-labels-container">
+                    <label for="select-knight" class="class-label">Knight</label>
+                    <label for="select-mage" class="class-label">Mage</label>
+                    <label for="select-archer" class="class-label">Archer</label>
+                </div>
+
+                <!-- Cards Wrapper -->
+                <div class="class-cards-wrapper">
+                    
+                    <!-- Knight Card -->
+                    <div class="class-display-card" id="card-knight">
+                        <div class="class-visual-frame">
+                            <img src="assets/mmorpg_assets.jpg" alt="MMORPG Knight Class" class="class-visual-img" style="object-position: left top; transform: scale(1.8) translate(30px, 40px);">
+                        </div>
+                        <div>
+                            <h3 style="font-family: 'Orbitron'; font-size: 1.8rem; color: var(--text-primary); margin-bottom: 0.8rem;">Gothic Knight</h3>
+                            <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.5rem;">The frontline tank. Excels in heavy broadswords, high armor mitigation, and active shield parrying. Relies on bulk constitution to shield magic casters from raid bosses.</p>
+                            
+                            <h4 style="font-family: 'Orbitron'; font-size: 1rem; color: var(--neon-purple); text-transform: uppercase;">Equipment Slots</h4>
+                            <div class="gear-slots">
+                                <div class="gear-slot-item">⚔ <span>Blade</span></div>
+                                <div class="gear-slot-item">🛡 <span>Shield</span></div>
+                                <div class="gear-slot-item">🪖 <span>Helm</span></div>
+                                <div class="gear-slot-item">👢 <span>Greaves</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mage Card -->
+                    <div class="class-display-card" id="card-mage">
+                        <div class="class-visual-frame">
+                            <img src="assets/mmorpg_assets.jpg" alt="MMORPG Mage Class" class="class-visual-img" style="object-position: center top; transform: scale(1.8) translate(5px, 40px);">
+                        </div>
+                        <div>
+                            <h3 style="font-family: 'Orbitron'; font-size: 1.8rem; color: var(--text-primary); margin-bottom: 0.8rem;">Arcane Wizard</h3>
+                            <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.5rem;">Master of elements. Channels runic spells to trigger screen-clearing explosions. Extremely fragile, but possesses infinite firepower and tactical teleport spells.</p>
+                            
+                            <h4 style="font-family: 'Orbitron'; font-size: 1rem; color: var(--neon-purple); text-transform: uppercase;">Equipment Slots</h4>
+                            <div class="gear-slots">
+                                <div class="gear-slot-item">🪄 <span>Staff</span></div>
+                                <div class="gear-slot-item">📖 <span>Tome</span></div>
+                                <div class="gear-slot-item">👘 <span>Robe</span></div>
+                                <div class="gear-slot-item">💍 <span>Ring</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Archer Card -->
+                    <div class="class-display-card" id="card-archer">
+                        <div class="class-visual-frame">
+                            <img src="assets/mmorpg_assets.jpg" alt="MMORPG Archer Class" class="class-visual-img" style="object-position: right top; transform: scale(1.8) translate(-30px, 40px);">
+                        </div>
+                        <div>
+                            <h3 style="font-family: 'Orbitron'; font-size: 1.8rem; color: var(--text-primary); margin-bottom: 0.8rem;">Shadow Ranger</h3>
+                            <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.5rem;">Agile marksman. Fires lethal arrows from afar while setting tactical bear traps to lock down charging monsters. Excels in movement speed and poison attributes.</p>
+                            
+                            <h4 style="font-family: 'Orbitron'; font-size: 1rem; color: var(--neon-purple); text-transform: uppercase;">Equipment Slots</h4>
+                            <div class="gear-slots">
+                                <div class="gear-slot-item">🏹 <span>Bow</span></div>
+                                <div class="gear-slot-item">🎯 <span>Quiver</span></div>
+                                <div class="gear-slot-item">🧤 <span>Gloves</span></div>
+                                <div class="gear-slot-item">👟 <span>Boots</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer Section -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>ARCADE<span>X</span></h3>
+                <p>Welcome to ArcadeX, the premier portal for immersive browser gaming. Harnessing absolute styling features to create top tier desktop and mobile experiences.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul class="footer-links">
+                    <li><a href="index.html">Home Hub</a></li>
+                    <li><a href="strategy.html">Strategy Command</a></li>
+                    <li><a href="adventure.html">Adventure Lands</a></li>
+                    <li><a href="rpg.html">RPG Realms</a></li>
+                    <li><a href="simulation.html">Simulation Deck</a></li>
+                    <li><a href="feedback.html">Quest Board (Feedback)</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Connect With Us</h3>
+                <p>Follow us for latest updates, events, tournaments, and server updates.</p>
+                <div class="social-icons">
+                    <a href="#" class="social-icon">𝕏</a>
+                    <a href="#" class="social-icon">🎮</a>
+                    <a href="#" class="social-icon">💬</a>
+                    <a href="#" class="social-icon">📹</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2026 ArcadeX Arena. All rights reserved. Created with absolute HTML & CSS.
+        </div>
+    </footer>
+
+</body>
+</html>

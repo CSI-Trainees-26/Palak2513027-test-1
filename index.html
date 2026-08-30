@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arcade X - Ultimate Game Arena</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Home Page Custom Styles */
+        .home-hero {
+            background: radial-gradient(circle at center, rgba(13, 13, 25, 0.4) 0%, rgba(5, 5, 8, 0.95) 80%),
+                        url('assets/dark_castle.jpg') no-repeat center center/cover;
+            position: relative;
+            z-index: 1;
+        }
+
+        .home-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(0deg, var(--bg-dark) 0%, transparent 100%),
+                        radial-gradient(ellipse at 50% 50%, rgba(0, 240, 255, 0.1) 0%, transparent 70%);
+            z-index: -1;
+        }
+
+        /* Cyberpunk Grid Background Overlay */
+        .cyber-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: 50px 50px;
+            background-image: 
+                linear-gradient(to right, rgba(0, 240, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 240, 255, 0.05) 1px, transparent 1px);
+            z-index: -1;
+            transform: perspective(500px) rotateX(60deg) translateY(-20%);
+            transform-origin: top center;
+            animation: grid-scroll 20s linear infinite;
+        }
+
+        @keyframes grid-scroll {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 1000px; }
+        }
+
+        .hero-content {
+            text-align: center;
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .cyber-badge-main {
+            display: inline-block;
+            background: rgba(0, 240, 255, 0.15);
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 0.5rem 1.5rem;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            border-radius: 50px;
+            margin-bottom: 2rem;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .hero-title {
+            font-size: 4.5rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255,255,255,0.1),
+                         0 0 20px rgba(0,240,255,0.3),
+                         0 0 40px rgba(0,240,255,0.5);
+            background: linear-gradient(135deg, #ffffff 30%, var(--neon-blue) 70%, var(--neon-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-title span {
+            display: block;
+            font-size: 5.5rem;
+            color: var(--neon-pink);
+            text-shadow: 0 0 10px rgba(255, 0, 127, 0.3),
+                         0 0 35px rgba(255, 0, 127, 0.7);
+            background: linear-gradient(135deg, var(--neon-pink) 30%, #fff 70%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-text {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            margin-bottom: 2.5rem;
+            line-height: 1.6;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+        }
+
+        /* Showstopper Game Deck Styles */
+        .showcase-section {
+            padding: 6rem 2rem;
+            position: relative;
+            background: #050508;
+        }
+
+        .game-deck {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .deck-card {
+            background: var(--bg-card-solid);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+            transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+            height: 480px;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        /* Border Glow & Overlay for cards */
+        .deck-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 16px;
+            padding: 2px;
+            background: linear-gradient(to bottom, var(--card-accent), transparent);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0;
+            transition: var(--transition-medium);
+        }
+
+        .deck-card:hover {
+            transform: translateY(-15px) scale(1.03);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8),
+                        0 0 30px rgba(var(--card-accent-rgb), 0.3);
+            border-color: transparent;
+        }
+
+        .deck-card:hover::after {
+            opacity: 1;
+        }
+
+        .deck-img-container {
+            height: 60%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .deck-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: var(--transition-slow);
+            filter: grayscale(40%) contrast(1.1);
+        }
+
+        .deck-card:hover .deck-img {
+            transform: scale(1.1);
+            filter: grayscale(0%) contrast(1);
+        }
+
+        /* Genre specific overlay color tint */
+        .deck-img-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, transparent 40%, rgba(19, 19, 31, 0.95));
+            transition: var(--transition-medium);
+        }
+
+        .deck-card:hover .deck-img-overlay {
+            background: linear-gradient(180deg, rgba(var(--card-accent-rgb), 0.15) 0%, rgba(19, 19, 31, 0.95) 80%);
+        }
+
+        .deck-info {
+            padding: 1.5rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            background: var(--bg-card-solid);
+        }
+
+        .deck-genre {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--card-accent);
+            letter-spacing: 2px;
+            margin-bottom: 0.5rem;
+        }
+
+        .deck-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.8rem;
+        }
+
+        .deck-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 1.5rem;
+        }
+
+        .deck-btn {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: auto;
+            align-self: flex-start;
+            transition: var(--transition-fast);
+        }
+
+        .deck-btn span {
+            transition: var(--transition-fast);
+        }
+
+        .deck-card:hover .deck-btn {
+            color: var(--card-accent);
+            text-shadow: 0 0 10px rgba(var(--card-accent-rgb), 0.5);
+        }
+
+        .deck-card:hover .deck-btn span {
+            transform: translateX(5px);
+        }
+
+        /* Specific Cards Theming */
+        .card-strategy {
+            --card-accent: var(--neon-gold);
+            --card-accent-rgb: 255, 189, 0;
+        }
+        .card-adventure {
+            --card-accent: var(--neon-red);
+            --card-accent-rgb: 255, 51, 68;
+        }
+        .card-rpg {
+            --card-accent: var(--neon-purple);
+            --card-accent-rgb: 176, 38, 255;
+        }
+        .card-simulation {
+            --card-accent: var(--neon-cyan);
+            --card-accent-rgb: 0, 255, 210;
+        }
+
+        /* CSS Features/Stats section styling */
+        .features-grid-section {
+            padding: 6rem 2rem;
+            background: linear-gradient(180deg, #050508, #0a0a0f);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-box {
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 2.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition-medium);
+        }
+
+        .feature-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--feature-color);
+            box-shadow: 0 0 10px var(--feature-color);
+        }
+
+        .feature-box:hover {
+            transform: translateY(-5px);
+            background: rgba(25, 25, 38, 0.7);
+            border-color: rgba(var(--feature-color-rgb), 0.2);
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.4);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--feature-color);
+            text-shadow: 0 0 15px rgba(var(--feature-color-rgb), 0.4);
+        }
+
+        .feature-title {
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+        }
+
+        .feature-desc {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .f-blue {
+            --feature-color: var(--neon-blue);
+            --feature-color-rgb: 0, 240, 255;
+        }
+        .f-pink {
+            --feature-color: var(--neon-pink);
+            --feature-color-rgb: 255, 0, 127;
+        }
+        .f-green {
+            --feature-color: var(--neon-green);
+            --feature-color-rgb: 57, 255, 20;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .game-deck {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 768px) {
+            .hero-title { font-size: 3rem; }
+            .hero-title span { font-size: 3.5rem; }
+            .hero-text { font-size: 1.1rem; }
+            .game-deck {
+                grid-template-columns: 1fr;
+            }
+            .deck-card {
+                height: 420px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="nav-container">
+            <a href="index.html" class="logo">ARCADE<span>X</span></a>
+            
+            <input type="checkbox" id="menu-toggle">
+            <label for="menu-toggle" class="menu-toggle-btn">
+                <span></span>
+                <span></span>
+                <span></span>
+            </label>
+
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link active">Home</a></li>
+                <li><a href="strategy.html" class="nav-link">Strategy</a></li>
+                <li><a href="adventure.html" class="nav-link">Adventure</a></li>
+                <li><a href="rpg.html" class="nav-link">RPG</a></li>
+                <li><a href="simulation.html" class="nav-link">Simulation</a></li>
+                <li><a href="feedback.html" class="nav-link">Feedback</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        
+        <!-- Hero Section -->
+        <section class="hero-section home-hero">
+            <div class="cyber-grid"></div>
+            <div class="hero-content">
+                <div class="cyber-badge-main">Next-Gen Gaming Hub</div>
+                <h1 class="hero-title">Step into the <span>Arena</span></h1>
+                <p class="hero-text">Experience a futuristic gaming sanctuary with beautiful landscapes, tactical maps, role-playing realms, and realistic simulation cockpits. Powered entirely by next-generation layouts.</p>
+                <div class="hero-buttons">
+                    <a href="#showcase" class="btn">Explore Games</a>
+                    <a href="feedback.html" class="btn btn-pink">Submit Quest</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Showcase / Game Deck Section -->
+        <section class="showcase-section" id="showcase">
+            <div class="container" style="padding-top: 0; padding-bottom: 2rem;">
+                <h2 class="section-title">Select Your <span>Realm</span></h2>
+                <p class="section-subtitle">Dive into high-fidelity gaming dimensions. Pick a genre to examine specialized characters, interactive visual systems, and custom animations.</p>
+            </div>
+            
+            <div class="game-deck">
+                <!-- Strategy -->
+                <a href="strategy.html" class="deck-card card-strategy">
+                    <div class="deck-img-container">
+                        <img src="assets/dragons.jpg" alt="Dragons flying in clouds" class="deck-img">
+                        <div class="deck-img-overlay"></div>
+                    </div>
+                    <div class="deck-info">
+                        <div>
+                            <div class="deck-genre">Tactical</div>
+                            <h3 class="deck-title">Strategy</h3>
+                            <p class="deck-desc">Command massive armies, construct empires, and dominate mythical skies with military precision.</p>
+                        </div>
+                        <div class="deck-btn">Enter Domain <span>➔</span></div>
+                    </div>
+                </a>
+
+                <!-- Adventure -->
+                <a href="adventure.html" class="deck-card card-adventure">
+                    <div class="deck-img-container">
+                        <img src="assets/sekiro.jpg" alt="Sekiro Action Adventure" class="deck-img">
+                        <div class="deck-img-overlay"></div>
+                    </div>
+                    <div class="deck-info">
+                        <div>
+                            <div class="deck-genre">Narrative</div>
+                            <h3 class="deck-title">Adventure</h3>
+                            <p class="deck-desc">Walk the path of ancient shinobis, solve challenging puzzles, and traverse gothic lands.</p>
+                        </div>
+                        <div class="deck-btn">Enter Domain <span>➔</span></div>
+                    </div>
+                </a>
+
+                <!-- RPG -->
+                <a href="rpg.html" class="deck-card card-rpg">
+                    <div class="deck-img-container">
+                        <img src="assets/masked_figure.jpg" alt="Dark fantasy medieval RPG" class="deck-img">
+                        <div class="deck-img-overlay"></div>
+                    </div>
+                    <div class="deck-info">
+                        <div>
+                            <div class="deck-genre">Progression</div>
+                            <h3 class="deck-title">Role Playing</h3>
+                            <p class="deck-desc">Select classes, customize gear, customize wizardry, and upgrade legendary stats.</p>
+                        </div>
+                        <div class="deck-btn">Enter Domain <span>➔</span></div>
+                    </div>
+                </a>
+
+                <!-- Simulation -->
+                <a href="simulation.html" class="deck-card card-simulation">
+                    <div class="deck-img-container">
+                        <img src="assets/dark_castle.jpg" alt="Simulation game type" class="deck-img">
+                        <div class="deck-img-overlay"></div>
+                    </div>
+                    <div class="deck-info">
+                        <div>
+                            <div class="deck-genre">Immersive</div>
+                            <h3 class="deck-title">Simulation</h3>
+                            <p class="deck-desc">Step into ultra-realistic flight cockpits, operate cities, and pilot advanced jet machinery.</p>
+                        </div>
+                        <div class="deck-btn">Enter Domain <span>➔</span></div>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Features/Stats Section -->
+        <section class="features-grid-section">
+            <div class="container" style="padding-top: 0;">
+                <h2 class="section-title">Engineered to <span>Perform</span></h2>
+                <p class="section-subtitle">Every gaming screen features pure CSS animations, responsive layouts, and individual game environments.</p>
+                
+                <div class="features-grid">
+                    <div class="feature-box f-blue">
+                        <div class="feature-icon">✦</div>
+                        <h3 class="feature-title">Pure CSS Engine</h3>
+                        <p class="feature-desc">Interactive mechanics, dropdown toggles, and selectors work natively without relying on heavy JS scripts.</p>
+                    </div>
+
+                    <div class="feature-box f-pink">
+                        <div class="feature-icon">❖</div>
+                        <h3 class="feature-title">Character Showcases</h3>
+                        <p class="feature-desc">Each genre features custom-made avatars with full stat boards and visual traits outlining game concepts.</p>
+                    </div>
+
+                    <div class="feature-box f-green">
+                        <div class="feature-icon">⚙</div>
+                        <h3 class="feature-title">Responsive Grid</h3>
+                        <p class="feature-desc">Specially coded layout scales flawlessly from large desktop monitors down to mobile viewport screens.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer Section -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>ARCADE<span>X</span></h3>
+                <p>Welcome to ArcadeX, the premier portal for immersive browser gaming. Harnessing absolute styling features to create top tier desktop and mobile experiences.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul class="footer-links">
+                    <li><a href="index.html">Home Hub</a></li>
+                    <li><a href="strategy.html">Strategy Command</a></li>
+                    <li><a href="adventure.html">Adventure Lands</a></li>
+                    <li><a href="rpg.html">RPG Realms</a></li>
+                    <li><a href="simulation.html">Simulation Deck</a></li>
+                    <li><a href="feedback.html">Quest Board (Feedback)</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Connect With Us</h3>
+                <p>Follow us for latest updates, events, tournaments, and server updates.</p>
+                <div class="social-icons">
+                    <a href="#" class="social-icon">𝕏</a>
+                    <a href="#" class="social-icon">🎮</a>
+                    <a href="#" class="social-icon">💬</a>
+                    <a href="#" class="social-icon">📹</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2026 ArcadeX Arena. All rights reserved. Created with absolute HTML & CSS.
+        </div>
+    </footer>
+
+</body>
+</html>

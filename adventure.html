@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adventure Realm - Arcade X</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Adventure Specific Page Styles */
+        .adventure-banner {
+            background: linear-gradient(180deg, rgba(7, 7, 10, 0.4) 0%, rgba(7, 7, 10, 0.95) 100%),
+                        url('assets/sekiro.jpg') no-repeat center center/cover;
+            position: relative;
+        }
+
+        /* Falling Sakura (Cherry Blossom) Animation */
+        .sakura-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 2;
+        }
+
+        .petal {
+            position: absolute;
+            background: linear-gradient(135deg, #ffb7c5, #ff8da1);
+            border-radius: 15% 70% 15% 70%;
+            width: 12px;
+            height: 8px;
+            opacity: 0.7;
+            animation: fall-sway 10s linear infinite;
+        }
+
+        /* Individual petals delay & positioning */
+        .petal:nth-child(1) { left: 10%; width: 14px; height: 10px; animation-duration: 8s; animation-delay: 0s; }
+        .petal:nth-child(2) { left: 25%; width: 10px; height: 7px; animation-duration: 11s; animation-delay: 2s; }
+        .petal:nth-child(3) { left: 40%; width: 12px; height: 8px; animation-duration: 9s; animation-delay: 4s; }
+        .petal:nth-child(4) { left: 55%; width: 15px; height: 11px; animation-duration: 7s; animation-delay: 1s; }
+        .petal:nth-child(5) { left: 70%; width: 9px; height: 6px; animation-duration: 13s; animation-delay: 3s; }
+        .petal:nth-child(6) { left: 85%; width: 13px; height: 9px; animation-duration: 10s; animation-delay: 5s; }
+        .petal:nth-child(7) { left: 95%; width: 11px; height: 8px; animation-duration: 12s; animation-delay: 1.5s; }
+        .petal:nth-child(8) { left: 15%; width: 12px; height: 8px; animation-duration: 10s; animation-delay: 6s; }
+        .petal:nth-child(9) { left: 45%; width: 10px; height: 7px; animation-duration: 11s; animation-delay: 7s; }
+        .petal:nth-child(10) { left: 75%; width: 14px; height: 9px; animation-duration: 8s; animation-delay: 8s; }
+
+        @keyframes fall-sway {
+            0% {
+                top: -50px;
+                transform: translateX(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.8;
+            }
+            90% {
+                opacity: 0.8;
+            }
+            100% {
+                top: 105%;
+                transform: translateX(150px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Slash Strike Animation Showcase */
+        .slash-showcase-box {
+            background: #09090e;
+            border: 2px solid rgba(255, 51, 68, 0.1);
+            border-radius: 16px;
+            padding: 3rem;
+            margin-top: 3rem;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 350px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            cursor: pointer;
+        }
+
+        .slash-target-card {
+            background: rgba(20, 20, 30, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 2.5rem;
+            text-align: center;
+            position: relative;
+            z-index: 5;
+            transition: all 0.3s ease;
+            max-width: 400px;
+        }
+
+        .slash-target-card h3 {
+            font-size: 1.6rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .slash-target-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        /* The Slash Line Overlay */
+        .slash-line-1 {
+            position: absolute;
+            width: 150%;
+            height: 4px;
+            background: #ffffff;
+            box-shadow: 0 0 20px #ff3344, 0 0 40px #ff3344;
+            top: 50%;
+            left: -25%;
+            transform: rotate(-30deg) scaleX(0);
+            transform-origin: left center;
+            z-index: 10;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        .slash-line-2 {
+            position: absolute;
+            width: 150%;
+            height: 4px;
+            background: #ffffff;
+            box-shadow: 0 0 20px #ff3344, 0 0 40px #ff3344;
+            top: 45%;
+            left: -25%;
+            transform: rotate(35deg) scaleX(0);
+            transform-origin: left center;
+            z-index: 10;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        /* Visual Flash screen overlay */
+        .slash-flash {
+            position: absolute;
+            inset: 0;
+            background: #ffffff;
+            z-index: 9;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Hover action trigger */
+        .slash-showcase-box:hover .slash-line-1 {
+            animation: slash-action-1 0.4s cubic-bezier(0.1, 0.8, 0.1, 1) forwards;
+        }
+
+        .slash-showcase-box:hover .slash-line-2 {
+            animation: slash-action-2 0.4s cubic-bezier(0.1, 0.8, 0.1, 1) 0.15s forwards;
+        }
+
+        .slash-showcase-box:hover .slash-flash {
+            animation: flash-action 0.4s ease-out 0.2s;
+        }
+
+        .slash-showcase-box:hover .slash-target-card {
+            transform: scale(0.98);
+            border-color: var(--neon-red);
+            box-shadow: 0 0 20px rgba(255, 51, 68, 0.2);
+        }
+
+        @keyframes slash-action-1 {
+            0% { transform: rotate(-30deg) scaleX(0); opacity: 1; }
+            50% { transform: rotate(-30deg) scaleX(1); opacity: 1; }
+            100% { transform: rotate(-30deg) scaleX(1) translateX(50px); opacity: 0; }
+        }
+
+        @keyframes slash-action-2 {
+            0% { transform: rotate(35deg) scaleX(0); opacity: 1; }
+            50% { transform: rotate(35deg) scaleX(1); opacity: 1; }
+            100% { transform: rotate(35deg) scaleX(1) translateX(50px); opacity: 0; }
+        }
+
+        @keyframes flash-action {
+            0% { opacity: 0; }
+            15% { opacity: 0.8; }
+            100% { opacity: 0; }
+        }
+    </style>
+</head>
+<body class="theme-adventure">
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="nav-container">
+            <a href="index.html" class="logo">ARCADE<span>X</span></a>
+            
+            <input type="checkbox" id="menu-toggle">
+            <label for="menu-toggle" class="menu-toggle-btn">
+                <span></span>
+                <span></span>
+                <span></span>
+            </label>
+
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="strategy.html" class="nav-link">Strategy</a></li>
+                <li><a href="adventure.html" class="nav-link active">Adventure</a></li>
+                <li><a href="rpg.html" class="nav-link">RPG</a></li>
+                <li><a href="simulation.html" class="nav-link">Simulation</a></li>
+                <li><a href="feedback.html" class="nav-link">Feedback</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        
+        <!-- Hero/Banner Section -->
+        <section class="hero-section adventure-banner">
+            <div class="sakura-container">
+                <div class="petal"></div>
+                <div class="petal"></div>
+                <div class="petal"></div>
+                <div class="petal"></div>
+                <div class="petal"></div>
+                <div class="petal"></div>
+                <div class="petal"></div>
+                <div class="petal"></div>
+                <div class="petal"></div>
+                <div class="petal"></div>
+            </div>
+            <div class="hero-content">
+                <div class="cyber-badge-main" style="border-color: var(--theme-accent); color: var(--theme-accent); box-shadow: var(--theme-shadow);">Adventure Dimension</div>
+                <h1 class="hero-title" style="background: linear-gradient(135deg, #fff 30%, var(--neon-red) 70%, #880011); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Path of the <span>Shinobi</span></h1>
+                <p class="hero-text">Traverse sprawling cliffside temples, dodge lethal katana strikes, and uncover the historical mystery of the legendary Ninja warriors.</p>
+                <div class="hero-buttons">
+                    <a href="#details" class="btn btn-red">Meet Shinobi</a>
+                    <a href="#slash-zone" class="btn">Test Katana</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Character and Genre details -->
+        <section class="container" id="details">
+            <div class="game-info-wrapper">
+                
+                <!-- Character Card -->
+                <div class="character-card">
+                    <div class="character-image-container">
+                        <img src="assets/sekiro.jpg" alt="Wolf the Shinobi character" class="character-image">
+                        <div class="character-badge">Shinobi Card</div>
+                        <div class="character-details">
+                            <h3 class="character-name">Wolf</h3>
+                            <div class="character-role">One-Armed Shinobi</div>
+                            
+                            <!-- Stats -->
+                            <div class="stat-bar-container">
+                                <div class="stat-header">
+                                    <span>Sword Deflection</span>
+                                    <span>98%</span>
+                                </div>
+                                <div class="stat-bar"><div class="stat-fill" style="width: 98%;"></div></div>
+                            </div>
+                            
+                            <div class="stat-bar-container">
+                                <div class="stat-header">
+                                    <span>Stealth & Agility</span>
+                                    <span>90%</span>
+                                </div>
+                                <div class="stat-bar"><div class="stat-fill" style="width: 90%;"></div></div>
+                            </div>
+
+                            <div class="stat-bar-container">
+                                <div class="stat-header">
+                                    <span>Prosthetic Tools</span>
+                                    <span>85%</span>
+                                </div>
+                                <div class="stat-bar"><div class="stat-fill" style="width: 85%;"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Explanation of Game Type -->
+                <div class="game-description">
+                    <h2>Exploring Adventure Worlds</h2>
+                    <p>Adventure games center on exploring detailed, interactive environments and navigating high-stakes combative narratives. Rather than focusing on numbers and stat charts, players rely on active mechanical execution, traversal maneuvers, and map analysis.</p>
+                    <p>Taking control of **Wolf, the Shinobi**, players navigate ruined castles and fiery bridges. You use grappling hooks to reach roofs, stealth bushes to avoid patrols, and deflect blades with milliseconds accuracy to break enemy posture.</p>
+                    
+                    <ul class="game-features">
+                        <li><strong>Parry Combat System</strong>: Block and clash swords right at impact to stun boss posture meters.</li>
+                        <li><strong>Vertical Exploration</strong>: Scale walls, hook onto temples, and plunge from ceilings to surprise patrols.</li>
+                        <li><strong>Narrative Progression</strong>: Interact with mysterious characters, obtain shinobi memories, and trigger multiple endings.</li>
+                    </ul>
+                </div>
+
+            </div>
+
+            <!-- Slash CSS Animation Widget -->
+            <div class="slash-showcase-box" id="slash-zone">
+                <div class="slash-line-1"></div>
+                <div class="slash-line-2"></div>
+                <div class="slash-flash"></div>
+                
+                <div class="slash-target-card">
+                    <h3 style="font-family: 'Orbitron'; text-shadow: 0 0 10px rgba(255, 51, 68, 0.4);">⚔ Strike Zone ⚔</h3>
+                    <p style="margin-top: 10px;">Hover your mouse or tap this block to perform a rapid dual sword strike slash! Watch the blades slice and trigger the flash effect.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer Section -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>ARCADE<span>X</span></h3>
+                <p>Welcome to ArcadeX, the premier portal for immersive browser gaming. Harnessing absolute styling features to create top tier desktop and mobile experiences.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul class="footer-links">
+                    <li><a href="index.html">Home Hub</a></li>
+                    <li><a href="strategy.html">Strategy Command</a></li>
+                    <li><a href="adventure.html">Adventure Lands</a></li>
+                    <li><a href="rpg.html">RPG Realms</a></li>
+                    <li><a href="simulation.html">Simulation Deck</a></li>
+                    <li><a href="feedback.html">Quest Board (Feedback)</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Connect With Us</h3>
+                <p>Follow us for latest updates, events, tournaments, and server updates.</p>
+                <div class="social-icons">
+                    <a href="#" class="social-icon">𝕏</a>
+                    <a href="#" class="social-icon">🎮</a>
+                    <a href="#" class="social-icon">💬</a>
+                    <a href="#" class="social-icon">📹</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2026 ArcadeX Arena. All rights reserved. Created with absolute HTML & CSS.
+        </div>
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strategy Realm - Arcade X</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Strategy Specific Page Styles */
+        .strategy-banner {
+            background: linear-gradient(180deg, rgba(7, 7, 10, 0.4) 0%, rgba(7, 7, 10, 0.95) 100%),
+                        url('assets/dragons.jpg') no-repeat center center/cover;
+            position: relative;
+        }
+
+        /* Cruising Dragons Animation */
+        .sky-animation-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 2;
+        }
+
+        .flying-dragon-1 {
+            position: absolute;
+            top: 15%;
+            left: -150px;
+            width: 120px;
+            height: 60px;
+            background: radial-gradient(circle, rgba(255, 189, 0, 0.3) 0%, transparent 70%);
+            clip-path: polygon(0% 50%, 30% 0%, 70% 30%, 100% 50%, 70% 70%, 30% 100%);
+            animation: cruise-right 25s linear infinite;
+            filter: blur(1px);
+        }
+
+        .flying-dragon-2 {
+            position: absolute;
+            top: 40%;
+            right: -150px;
+            width: 100px;
+            height: 50px;
+            background: radial-gradient(circle, rgba(255, 189, 0, 0.2) 0%, transparent 70%);
+            clip-path: polygon(0% 50%, 30% 10%, 70% 40%, 100% 50%, 70% 60%, 30% 90%);
+            animation: cruise-left 32s linear infinite;
+            filter: blur(2px);
+        }
+
+        @keyframes cruise-right {
+            0% { transform: translateX(0) translateY(0) scale(1); }
+            50% { transform: translateX(50vw) translateY(-20px) scale(1.1); }
+            100% { transform: translateX(110vw) translateY(10px) scale(1); }
+        }
+
+        @keyframes cruise-left {
+            0% { transform: translateX(0) translateY(0) scale(1); }
+            50% { transform: translateX(-50vw) translateY(30px) scale(0.9); }
+            100% { transform: translateX(-110vw) translateY(-10px) scale(1); }
+        }
+
+        /* Tactical Battlefield Interactive Grid Animation */
+        .battlefield-showcase {
+            background: #09090e;
+            border: 2px solid rgba(255, 189, 0, 0.1);
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin-top: 3rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        }
+
+        .battle-grid-container {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 8px;
+            max-width: 600px;
+            margin: 2rem auto 0 auto;
+        }
+
+        .battle-cell {
+            aspect-ratio: 1;
+            background: rgba(255, 189, 0, 0.03);
+            border: 1px solid rgba(255, 189, 0, 0.15);
+            border-radius: 6px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        /* Active Target Reticle on cell hover */
+        .battle-cell::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            border: 1px dashed rgba(255, 189, 0, 0.4);
+            border-radius: 4px;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.3s ease;
+        }
+
+        .battle-cell::after {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: var(--neon-gold);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            box-shadow: 0 0 10px var(--neon-gold);
+            transition: all 0.3s ease;
+        }
+
+        .battle-cell:hover {
+            background: rgba(255, 189, 0, 0.15);
+            border-color: var(--neon-gold);
+            box-shadow: 0 0 15px rgba(255, 189, 0, 0.25);
+            transform: scale(1.05);
+        }
+
+        .battle-cell:hover::before {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .battle-cell:hover::after {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        /* Preset special cell types for visuals */
+        .cell-commander {
+            border-color: var(--neon-pink);
+            background: rgba(255, 0, 127, 0.05);
+            animation: pulse-border 2s infinite alternate;
+        }
+        .cell-commander::after {
+            background: var(--neon-pink);
+            box-shadow: 0 0 10px var(--neon-pink);
+        }
+        .cell-commander:hover {
+            border-color: var(--neon-pink);
+            box-shadow: 0 0 15px rgba(255, 0, 127, 0.3);
+        }
+
+        .cell-base {
+            border-color: var(--neon-cyan);
+            background: rgba(0, 255, 210, 0.05);
+        }
+        .cell-base::after {
+            background: var(--neon-cyan);
+            box-shadow: 0 0 10px var(--neon-cyan);
+        }
+        .cell-base:hover {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 15px rgba(0, 255, 210, 0.3);
+        }
+
+        @keyframes pulse-border {
+            0% { border-color: rgba(255, 0, 127, 0.3); }
+            100% { border-color: rgba(255, 0, 127, 1); }
+        }
+
+        /* Legend details */
+        .battle-legend {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+        
+        @media (max-width: 600px) {
+            .battle-grid-container {
+                grid-template-columns: repeat(6, 1fr);
+            }
+            .battle-cell:nth-child(n+37) {
+                display: none; /* Hide bottom rows on small screens */
+            }
+        }
+    </style>
+</head>
+<body class="theme-strategy">
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="nav-container">
+            <a href="index.html" class="logo">ARCADE<span>X</span></a>
+            
+            <input type="checkbox" id="menu-toggle">
+            <label for="menu-toggle" class="menu-toggle-btn">
+                <span></span>
+                <span></span>
+                <span></span>
+            </label>
+
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="strategy.html" class="nav-link active">Strategy</a></li>
+                <li><a href="adventure.html" class="nav-link">Adventure</a></li>
+                <li><a href="rpg.html" class="nav-link">RPG</a></li>
+                <li><a href="simulation.html" class="nav-link">Simulation</a></li>
+                <li><a href="feedback.html" class="nav-link">Feedback</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        
+        <!-- Hero/Banner Section -->
+        <section class="hero-section strategy-banner">
+            <div class="sky-animation-container">
+                <div class="flying-dragon-1"></div>
+                <div class="flying-dragon-2"></div>
+            </div>
+            <div class="hero-content">
+                <div class="cyber-badge-main" style="border-color: var(--theme-accent); color: var(--theme-accent); box-shadow: var(--theme-shadow);">Strategy Dimension</div>
+                <h1 class="hero-title" style="background: linear-gradient(135deg, #fff 30%, var(--neon-gold) 70%, #ff6a00); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Tactical <span>Command</span></h1>
+                <p class="hero-text">Outplan your competitors, seize control of resource-rich skies, and maneuver your aerial forces to claim absolute victory in real-time battles.</p>
+                <div class="hero-buttons">
+                    <a href="#details" class="btn btn-gold">Analyze Class</a>
+                    <a href="#battlefield" class="btn">Launch Simulator</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Character and Genre details -->
+        <section class="container" id="details">
+            <div class="game-info-wrapper">
+                
+                <!-- Character Card -->
+                <div class="character-card">
+                    <div class="character-image-container">
+                        <img src="assets/dragons.jpg" alt="Ignis the Dragon Overlord" class="character-image">
+                        <div class="character-badge">Commander Card</div>
+                        <div class="character-details">
+                            <h3 class="character-name">Ignis</h3>
+                            <div class="character-role">Dragon Overlord</div>
+                            
+                            <!-- Stats -->
+                            <div class="stat-bar-container">
+                                <div class="stat-header">
+                                    <span>Tactical Vision</span>
+                                    <span>95%</span>
+                                </div>
+                                <div class="stat-bar"><div class="stat-fill" style="width: 95%;"></div></div>
+                            </div>
+                            
+                            <div class="stat-bar-container">
+                                <div class="stat-header">
+                                    <span>Resource Mastery</span>
+                                    <span>88%</span>
+                                </div>
+                                <div class="stat-bar"><div class="stat-fill" style="width: 88%;"></div></div>
+                            </div>
+
+                            <div class="stat-bar-container">
+                                <div class="stat-header">
+                                    <span>Sky Domination</span>
+                                    <span>92%</span>
+                                </div>
+                                <div class="stat-bar"><div class="stat-fill" style="width: 92%;"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Explanation of Game Type -->
+                <div class="game-description">
+                    <h2>The Mind of the Commander</h2>
+                    <p>Strategy games demand mental foresight over raw reflex speed. Players take on macro-level roles (like <strong>Ignis the Dragon Overlord</strong>) directing fleets of flying beasts, harvesting gold mines, and coordinating base defenses.</p>
+                    <p>Success requires evaluating complex statistics, analyzing unit counter-cycles, and adapting on the fly. To represent this, commanders like Ignis combine scouts, heavy siege units (ancient firebreathers), and strategic spells to breach fortress walls.</p>
+                    
+                    <ul class="game-features">
+                        <li><strong>Macro Base Building</strong>: Construct gold vaults, training aeries, and radar towers to build your empire.</li>
+                        <li><strong>Unit Micro Management</strong>: Position skirmishers to draw enemy fire while heavy dragons strike from the flanks.</li>
+                        <li><strong>Fog of War</strong>: Deploy tactical scout wings to illuminate grid squares and identify enemy build paths.</li>
+                    </ul>
+                </div>
+
+            </div>
+
+            <!-- Battlefield CSS Animation Widget -->
+            <div class="battlefield-showcase" id="battlefield">
+                <h2 class="section-title" style="font-size: 1.8rem; margin-bottom: 0.5rem;">Interactive <span>Tactical Grid</span></h2>
+                <p style="text-align: center; color: var(--text-secondary); max-width: 600px; margin: 0 auto 1.5rem auto;">Click or hover over coordinates below to activate radar scans, target opposing forces, and direct squad coordinates.</p>
+                
+                <div class="battle-grid-container">
+                    <!-- 64 cells representing the chess/strategy grid -->
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell cell-base"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell cell-commander"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell cell-base"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell cell-commander"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    
+                    <div class="battle-cell cell-base"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                    <div class="battle-cell"></div>
+                </div>
+
+                <div class="battle-legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--neon-gold);"></div>
+                        <span>Unexplored Grid</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--neon-pink);"></div>
+                        <span>Squad Commander</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--neon-cyan);"></div>
+                        <span>Outpost Base</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer Section -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>ARCADE<span>X</span></h3>
+                <p>Welcome to ArcadeX, the premier portal for immersive browser gaming. Harnessing absolute styling features to create top tier desktop and mobile experiences.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul class="footer-links">
+                    <li><a href="index.html">Home Hub</a></li>
+                    <li><a href="strategy.html">Strategy Command</a></li>
+                    <li><a href="adventure.html">Adventure Lands</a></li>
+                    <li><a href="rpg.html">RPG Realms</a></li>
+                    <li><a href="simulation.html">Simulation Deck</a></li>
+                    <li><a href="feedback.html">Quest Board (Feedback)</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Connect With Us</h3>
+                <p>Follow us for latest updates, events, tournaments, and server updates.</p>
+                <div class="social-icons">
+                    <a href="#" class="social-icon">𝕏</a>
+                    <a href="#" class="social-icon">🎮</a>
+                    <a href="#" class="social-icon">💬</a>
+                    <a href="#" class="social-icon">📹</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2026 ArcadeX Arena. All rights reserved. Created with absolute HTML & CSS.
+        </div>
+    </footer>
+
+</body>
+</html>
